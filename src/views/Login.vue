@@ -18,6 +18,9 @@
         <router-link to="/register">
           <button type="button" class="register-btn">สมัครสมาชิก</button>
         </router-link>
+        <router-link to="/admin-login">
+          <button type="button" class="admin-btn">เข้าสู่ระบบผู้ดูแล</button>
+        </router-link>
       </form>
     </div>
   </div>
@@ -44,7 +47,7 @@ export default {
 
 <style scoped>
 .login-bg {
-  min-height: 100vh;
+  min-height: 40ch;
   background: linear-gradient(135deg, #fffbe6 0%, #f0f9ff 100%);
   display: flex;
   align-items: center;
@@ -125,6 +128,25 @@ export default {
 }
 .register-btn:hover {
   background: #f39c12;
+  color: #fff;
+}
+.admin-btn {
+  width: 100%;
+  background: linear-gradient(90deg, #b71c1c 60%, #e67e22 100%);
+  color: #fff;
+  border: none;
+  padding: 12px 0;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.08rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 12px;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(230,126,34,0.10);
+}
+.admin-btn:hover {
+  background: #b71c1c;
   color: #fff;
 }
 .login-options {
