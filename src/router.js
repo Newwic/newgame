@@ -9,6 +9,7 @@ import RegisterView from './views/Register.vue'
 import LoginView from './views/Login.vue'
 import AdminLoginView from './views/AdminLogin.vue'
 import MainMenuView from './views/MainMenu.vue'
+import WelcomeView from './views/Welcome.vue'
 
 Vue.use(Router)
 
@@ -17,7 +18,8 @@ const router = new Router({
   routes: [
     {
       path: '/',
-      redirect: '/login'
+      name: 'Welcome',
+      component: WelcomeView
     },
     {
       path: '/register',
