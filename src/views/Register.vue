@@ -56,6 +56,8 @@
         </div>
       </form>
 
+      <p v-if="errors.general" class="error">{{ errors.general }}</p>
+
       <div v-if="success" class="success-box">
         ลงทะเบียนสำเร็จ
       </div>
@@ -64,6 +66,8 @@
 </template>
 
 <script>
+import apiClient from '../http.js';
+
 export default {
   name: 'RegisterView',
   data() {
@@ -112,25 +116,53 @@ export default {
       // return true if no errors
       return Object.keys(this.errors).length === 0
     },
-    onSubmit() {
-      this.success = false
+    async onSubmit() {
+      this.success = false;
       if (this.validate()) {
-        // ที่นี่สามารถเรียก API เพื่อบันทึกผู้ใช้ได้
-        this.success = true
-        // เก็บตัวอย่างลง localStorage
-        const payload = { ...this.form }
-        delete payload.confirmPassword
-        localStorage.setItem('registeredUser', JSON.stringify(payload))
-        // ตัวอย่าง: redirect หลัง 1.5 วินาที (ไม่บังคับ)
-        setTimeout(() => {
-          // this.$router.push('/main-menu')
-        }, 1500)
+        try {
+          const payload = { ...this.form };
+          delete payload.confirmPassword;
+
+          // The backend endpoint should be '/register.php' or similar
+          await apiClient.post('/register.php', payload);
+
+          this.success = true;
+          this.onReset(); // Clear form on success
+
+          // Redirect to login page after a short delay
+          setTimeout(() => {
+            this.$router.push('/login');
+          }, 2000);
+
+        } catch (err) {
+          if (err.response && err.response.data) {
+            const responseData = err.response.data;
+            if (responseData.errors) {
+              // Handle validation errors (e.g., { name: 'Name is required' })
+              this.errors = responseData.errors;
+            } else if (responseData.message) {
+              // Handle general errors (e.g., 'This email is already registered.')
+              // Display it as a general error or specifically for the email field
+              this.errors.general = responseData.message;
+            } else {
+              this.errors.general = 'เกิดข้อผิดพลาดที่ไม่รู้จัก';
+            }
+          } else if (err.request) {
+            // The request was made but no response was received
+            this.errors.general = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้';
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            this.errors.general = 'เกิดข้อผิดพลาดบางอย่าง';
+          }
+          console.error('Registration failed:', err);
+        }
       } else {
-        // focus first input field (small UX improvement)
         this.$nextTick(() => {
-          const el = this.$el.querySelector('.input')
-          if (el) el.focus()
-        })
+          const firstError = this.$el.querySelector('.error');
+          if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
       }
     },
     onReset() {

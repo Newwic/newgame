@@ -1,9 +1,9 @@
 <template>
   <div class="main-menu-container">
     <div class="khao-mun-gai-img-wrapper">
-      <img src="@/assets/now.png" alt="ข้าวมันไก่" class="khao-mun-gai-img" />
-      <img src="@/assets/now1.png" alt="ข้าวมันไก่ตกแต่งซ้าย" class="khao-mun-gai-deco deco-left" />
-      <img src="@/assets/now2.png" alt="ข้าวมันไก่ตกแต่งขวา" class="khao-mun-gai-deco deco-right" />
+      <img src="@/assets/now.png" alt="" class="khao-mun-gai-img" />
+      <img src="@/assets/now1.png" alt="" class="khao-mun-gai-deco deco-left" />
+      <img src="@/assets/now2.png" alt="" class="khao-mun-gai-deco deco-right" />
     </div>
     <h1>เมนูหลัก</h1>
     <div v-if="isLoggedIn" class="menu-links">

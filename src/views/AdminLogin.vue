@@ -23,8 +23,8 @@ const login = () => {
   error.value = null; // Reset error message
 
   // --- ตัวอย่างการตรวจสอบข้อมูล (ในระบบจริงควรเรียก API) ---
-  const ADMIN_USER = 'admin';
-  const ADMIN_PASS = 'password123';
+  const ADMIN_USER = 'neww';
+  const ADMIN_PASS = 'admin';
 
   if (username.value === ADMIN_USER && password.value === ADMIN_PASS) {
     // Login สำเร็จ
