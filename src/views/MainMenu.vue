@@ -6,7 +6,7 @@
       <img src="@/assets/now2.png" alt="" class="khao-mun-gai-deco deco-right" />
     </div>
     <h1>เมนูหลัก</h1>
-    <div v-if="isLoggedIn" class="menu-links">
+    <div v-if="isAuthenticated" class="menu-links">
       <router-link class="menu-link" to="/shop">Shop</router-link>
       <router-link class="menu-link" to="/news">News</router-link>
       <router-link class="menu-link" to="/contact">Contact</router-link>
@@ -22,21 +22,17 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex';
+
 export default {
   name: 'MainMenuView',
-  data() {
-    return {
-      isLoggedIn: false
-    }
-  },
-  created() {
-    // ตรวจสอบสถานะล็อกอินจาก localStorage (หรือ Vuex/store จริง)
-    this.isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  computed: {
+    ...mapGetters('auth', ['isAuthenticated'])
   },
   methods: {
+    ...mapActions('auth', ['logout']),
     logout() {
-      localStorage.removeItem('isLoggedIn');
-      this.isLoggedIn = false;
+      this.logout(); // Call the Vuex logout action
       this.$router.push('/login');
     }
   }

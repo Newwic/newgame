@@ -4,8 +4,8 @@
       <!-- Left Panel: Welcome Message and Image -->
       <div class="welcome-panel">
         <img src="../assets/now.png" alt="NewGame Welcome" class="welcome-image"/>
-        <h1 class="welcome-title">ยินดีต้อนรับสู่</h1>
-        <p class="welcome-subtitle">จักรวาลแห่งใหม่ของข้าวมันไก่สุดมัน</p>
+        <h1 class="welcome-title">ยินดีต้อนรับสู่ NewGame</h1>
+        <p class="welcome-subtitle">จักรวาลแห่งใหม่ของเหล่าเกมเมอร์</p>
       </div>
 
       <!-- Right Panel: Login Form -->
@@ -104,8 +104,8 @@ export default {
     },
     loginAdmin() {
       this.adminError = null;
-      const ADMIN_USER = 'ew';
-      const ADMIN_PASS = 'eww';
+      const ADMIN_USER = 'admin';
+      const ADMIN_PASS = 'password123';
 
       if (this.adminUsername === ADMIN_USER && this.adminPassword === ADMIN_PASS) {
         // Dispatch the Vuex action for admin login
@@ -123,7 +123,7 @@ export default {
 <style scoped>
 .login-view-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ffed9e 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
