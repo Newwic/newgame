@@ -31,10 +31,7 @@
           <h5>รีวิวล่าสุด</h5>
           <ul class="review-list">
             <li v-for="r in reviews" :key="r.id">
-              <div class="r-head">
-                <strong>{{ r.name || 'ลูกค้า' }}</strong> — {{ r.rating }} ★ <span class="r-time">{{ r.created_at }}</span>
-                <button v-if="isAdmin" class="delete-review-btn" @click="deleteReview(r.id)" style="margin-left:8px; background:none; border:none; color:#e74c3c; cursor:pointer">ลบ</button>
-              </div>
+              <div class="r-head"><strong>{{ r.name || 'ลูกค้า' }}</strong> — {{ r.rating }} ★ <span class="r-time">{{ r.created_at }}</span></div>
               <div class="r-comment">{{ r.comment }}</div>
             </li>
           </ul>
@@ -77,32 +74,6 @@ export default {
         }
       }).catch(e => {
         console.warn('loadReviews error', e);
-      });
-    },
-    isAdmin() {
-      try {
-        const user = this.$store.getters['auth/currentUser'];
-        return user && (user.id === 'admin' || user.email === 'admin@newgame.com');
-      } catch (e) {
-        return false;
-      }
-    },
-    deleteReview(id) {
-      if (!confirm('ลบรีวิวนี้จริงหรือไม่?')) return;
-      apiClient.post('/delete_review.php', { id }).then(res => {
-        if (res && res.data && res.data.success) {
-          this.loadReviews();
-        } else {
-          this.errorMessage = (res && res.data && res.data.message) || 'ลบไม่สำเร็จ';
-        }
-      }).catch(e => {
-        if (e && e.response && e.response.data && e.response.data.message) {
-          this.errorMessage = e.response.data.message;
-        } else if (e && e.message) {
-          this.errorMessage = e.message;
-        } else {
-          this.errorMessage = 'Unknown error deleting review';
-        }
       });
     },
     submitReview() {

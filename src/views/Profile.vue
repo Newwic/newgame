@@ -1,23 +1,33 @@
 <template>
-  <div class="profile-view">
-    <div class="profile-box">
-      <h2>แก้ไขข้อมูลส่วนตัว</h2>
-      <form @submit.prevent="handleProfileUpdate">
-        <div class="field">
-          <label class="label">ชื่อ</label>
-          <input v-model.trim="form.name" type="text" class="input" />
-          <p v-if="errors.name" class="error">{{ errors.name }}</p>
+  <div class="profile-wrapper">
+    <div class="profile-container">
+      <div class="profile-header">
+        <div class="avatar-container" @click="triggerAvatarUpload">
+          <img :src="avatarPreview || (currentUser.avatar_url && `${currentUser.avatar_url}?${cacheBuster}`) || `https://i.pravatar.cc/150?u=${currentUser.email}`" alt="User Avatar" class="avatar" />
+          <div class="avatar-upload-overlay">Change</div>
         </div>
-        <div class="field">
-          <label class="label">อีเมล</label>
-          <input :value="currentUser.email" type="email" class="input" disabled />
-        </div>
+        <input type="file" ref="avatarInput" @change="handleAvatarChange" accept="image/*" style="display: none" />
+        <h2>{{ currentUser.name }}</h2>
+        <p>{{ currentUser.email }}</p>
+      </div>
 
-        <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
-        <p v-if="errors.general" class="error">{{ errors.general }}</p>
+      <div class="profile-form-container">
+        <h3>Edit Profile</h3>
+        <form @submit.prevent="handleProfileUpdate">
+          <div class="input-group">
+            <label for="name">Name</label>
+            <input id="name" v-model.trim="form.name" type="text" />
+            <p v-if="errors.name" class="error-text">{{ errors.name }}</p>
+          </div>
 
-        <button type="submit" class="submit-btn">บันทึกการเปลี่ยนแปลง</button>
-      </form>
+          <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
+          <p v-if="errors.general" class="error-text">{{ errors.general }}</p>
+
+          <button type="submit" class="submit-btn" :disabled="isSubmitting">
+            {{ isSubmitting ? 'Saving...' : (form.avatar ? 'Save Picture & Changes' : 'Save Changes') }}
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -30,44 +40,77 @@ export default {
   data() {
     return {
       form: {
-        name: ''
+        name: '',
+        avatar: null
       },
+      avatarPreview: null,
       errors: {},
-      successMessage: ''
+      successMessage: '',
+      isSubmitting: false,
+      cacheBuster: Date.now()
     };
   },
   computed: {
     ...mapGetters('auth', ['currentUser'])
   },
   methods: {
-    ...mapActions('auth', ['updateProfile']), // Directly map the action
-    
+    ...mapActions('auth', ['updateProfile']),
+    triggerAvatarUpload() {
+      this.$refs.avatarInput.click();
+    },
+    handleAvatarChange(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      this.form.avatar = file;
+
+      // Create a preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.avatarPreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
     async handleProfileUpdate() {
       this.errors = {};
       this.successMessage = '';
+      this.isSubmitting = true;
+
+      const formData = new FormData();
+      formData.append('name', this.form.name);
+  // include email so server can identify the user
+  formData.append('email', this.currentUser && this.currentUser.email ? this.currentUser.email : '');
+      if (this.form.avatar) {
+        formData.append('avatar', this.form.avatar);
+      }
 
       try {
-        // Call the mapped action directly
-        const response = await this.updateProfile(this.form);
-        this.successMessage = response.data.message || 'อัปเดตโปรไฟล์สำเร็จ!';
+        const response = await this.updateProfile(formData);
+        this.successMessage = response.data.message || 'Profile updated successfully!';
+        this.form.avatar = null; // Reset avatar after successful upload
+        this.avatarPreview = null; // Clear preview
+        // Force the image to reload by updating the cache-buster
+        this.cacheBuster = Date.now();
       } catch (err) {
+        console.error('Profile update failed:', err);
         if (err.response && err.response.data && err.response.data.message) {
           this.errors.general = err.response.data.message;
+        } else if (err.request) {
+          this.errors.general = 'Could not connect to the server. Please check your connection and try again.';
         } else {
-          this.errors.general = 'เกิดข้อผิดพลาดในการอัปเดตโปรไฟล์';
+          this.errors.general = 'An unexpected error occurred while preparing the request.';
         }
-        console.error('Profile update failed:', err);
+      } finally {
+        this.isSubmitting = false;
       }
     }
   },
   created() {
-    // Pre-fill the form with the current user's name
     if (this.currentUser) {
       this.form.name = this.currentUser.name;
     }
   },
   watch: {
-    // Watch for changes in currentUser and update the form
     currentUser(newUser) {
       if (newUser) {
         this.form.name = newUser.name;
@@ -78,34 +121,153 @@ export default {
 </script>
 
 <style scoped>
-.profile-view {
+.profile-wrapper {
+  min-height: 100vh;
+  background: #f4f7f6;
+  padding: 2rem;
+  font-family: 'Montserrat', sans-serif;
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding-top: 40px;
 }
-.profile-box {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.08);
-  padding: 28px;
-  width: 450px;
-  max-width: 100%;
-}
-h2 { margin-bottom: 20px; }
-.field { margin-bottom: 15px; text-align: left; }
-.label { display: block; font-weight: 600; margin-bottom: 6px; }
-.input { width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid #ddd; }
-.input:disabled { background: #f5f5f5; color: #777; }
-.submit-btn {
-  background: #3498db;
-  color: white;
-  padding: 12px 15px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+
+.profile-container {
   width: 100%;
-  font-size: 1rem;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
-.error { color: #e74c3c; font-size: 0.875rem; margin-top: 6px; }
-.success-message { color: #27ae60; margin-bottom: 15px; }
+
+.profile-header {
+  background: linear-gradient(to right, #e67e22, #f39c12);
+  color: #fff;
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.avatar-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1rem;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+}
+
+.avatar-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-weight: 600;
+}
+
+.avatar-container:hover .avatar-upload-overlay {
+  opacity: 1;
+}
+
+.profile-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.profile-header p {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.profile-form-container {
+  padding: 2.5rem;
+}
+
+.profile-form-container h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #e67e22;
+  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
+}
+
+.submit-btn {
+  width: 100%;
+  background: #e67e22;
+  color: #fff;
+  border: none;
+  padding: 14px 0;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.submit-btn:hover {
+  background: #d35400;
+}
+
+.submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.success-message {
+  color: #27ae60;
+  background-color: rgba(39, 174, 96, 0.1);
+  border: 1px solid #27ae60;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
 </style>

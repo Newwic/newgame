@@ -1,22 +1,45 @@
 <template>
-  <div class="main-menu-container">
-    <div class="khao-mun-gai-img-wrapper">
-      <img src="@/assets/now.png" alt="" class="khao-mun-gai-img" />
-      <img src="@/assets/now1.png" alt="" class="khao-mun-gai-deco deco-left" />
-      <img src="@/assets/now2.png" alt="" class="khao-mun-gai-deco deco-right" />
-    </div>
-    <h1>เมนูหลัก</h1>
-    <div v-if="isAuthenticated" class="menu-links">
-      <router-link class="menu-link" to="/shop">Shop</router-link>
-      <router-link class="menu-link" to="/news">News</router-link>
-      <router-link class="menu-link" to="/contact">Contact</router-link>
-      <router-link class="menu-link" to="/about">About</router-link>
-      <button class="logout-btn" @click="logout">Logout</button>
-    </div>
-    <div v-else class="menu-login-message">
-      <p>กรุณาสมัครสมาชิกหรือเข้าสู่ระบบก่อนเข้าดูเมนู</p>
-      <router-link to="/register"><button class="register-btn">สมัครสมาชิก</button></router-link>
-      <router-link to="/login"><button class="login-btn">เข้าสู่ระบบ</button></router-link>
+  <div class="main-menu-wrapper">
+    <div class="main-menu-container">
+      <div v-if="isAuthenticated" class="authenticated-view">
+        <div class="hero-section">
+          <h1>ยินดีต้อนรับสู่ร้านอาหารของเรา</h1>
+          <p>ค้นพบเมนูแสนอร่อยและข้อเสนอสุดพิเศษของเรา</p>
+        </div>
+        <div class="menu-grid">
+          <router-link class="menu-card" to="/shop">
+            <i class="fas fa-store-alt menu-icon"></i>
+            <span class="menu-title">Shop</span>
+          </router-link>
+          <router-link class="menu-card" to="/news">
+            <i class="fas fa-newspaper menu-icon"></i>
+            <span class="menu-title">News</span>
+          </router-link>
+          <router-link class="menu-card" to="/contact">
+            <i class="fas fa-address-book menu-icon"></i>
+            <span class="menu-title">Contact</span>
+          </router-link>
+          <router-link class="menu-card" to="/about">
+            <i class="fas fa-info-circle menu-icon"></i>
+            <span class="menu-title">About</span>
+          </router-link>
+        </div>
+        <button class="logout-btn" @click="logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+      <div v-else class="unauthenticated-view">
+        <div class="login-prompt">
+          <i class="fas fa-lock login-icon"></i>
+          <h2>Please Log In</h2>
+          <p>You need to be logged in to access the main menu.</p>
+          <div class="button-group">
+            <router-link to="/login" class="btn btn-primary">Login</router-link>
+            <router-link to="/register" class="btn btn-secondary">Register</router-link>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -30,9 +53,9 @@ export default {
     ...mapGetters('auth', ['isAuthenticated'])
   },
   methods: {
-    ...mapActions('auth', ['logout']),
+    ...mapActions('auth', { vuexLogout: 'logout' }),
     logout() {
-      this.logout(); // Call the Vuex logout action
+      this.vuexLogout();
       this.$router.push('/login');
     }
   }
@@ -40,108 +63,161 @@ export default {
 </script>
 
 <style scoped>
+.main-menu-wrapper {
+  min-height: 100vh;
+  background: #f4f7f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+}
+
 .main-menu-container {
-  max-width: 400px;
-  margin: 60px auto;
-  padding: 36px 24px;
-  background: #f0f9ff;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(44,62,80,0.10);
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem;
+}
+
+/* Authenticated View */
+.authenticated-view {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 3rem;
   text-align: center;
 }
-.khao-mun-gai-img-wrapper {
-  position: relative;
-  width: 220px;
-  height: 200px;
-  margin: 0 auto 24px auto;
+
+.hero-section {
+  margin-bottom: 3rem;
 }
-.khao-mun-gai-img {
-  display: block;
-  margin: 0 auto;
-  width: 180px;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 6px solid #ffe082;
-  box-shadow: 0 4px 24px rgba(230, 103, 34, 0.18);
-  background: #fffbe7;
-  transition: transform 0.2s;
-  position: relative;
-  z-index: 2;
+
+.hero-section h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
 }
-.khao-mun-gai-img:hover {
-  transform: scale(1.05) rotate(-2deg);
-  box-shadow: 0 8px 32px rgba(230, 103, 34, 0.28);
+
+.hero-section p {
+  font-size: 1.1rem;
+  color: #777;
 }
-.khao-mun-gai-deco {
-  position: absolute;
-  width: 54px;
-  height: 54px;
-  object-fit: contain;
-  opacity: 0.85;
-  z-index: 1;
-  filter: drop-shadow(0 2px 8px rgba(230, 103, 34, 0.12));
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
 }
-.deco-left {
-  left: -18px;
-  top: 24px;
-  transform: rotate(-18deg) scale(0.95);
-}
-.deco-right {
-  right: -18px;
-  top: 48px;
-  transform: rotate(14deg) scale(1.05);
-}
-.main-menu-container h1 {
-  color: #e67e22;
-  margin-bottom: 24px;
-}
-.menu-links {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.menu-link {
-  background: #e67e22;
-  color: #fff;
-  border-radius: 8px;
-  padding: 14px 0;
-  font-size: 1.2rem;
-  font-weight: bold;
+
+.menu-card {
+  background: #f9f9f9;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
   text-decoration: none;
-  transition: background 0.2s;
+  color: #444;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid #eee;
 }
-.menu-link:hover {
-  background: #f39c12;
+
+.menu-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
-.menu-login-message {
-  margin-top: 24px;
+
+.menu-icon {
+  font-size: 2.5rem;
+  color: #e67e22;
+  margin-bottom: 1rem;
+  display: block;
 }
-.register-btn, .login-btn {
+
+.menu-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.logout-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
+/* Unauthenticated View */
+.unauthenticated-view {
+  text-align: center;
+}
+
+.login-prompt {
+  background: #fff;
+  border-radius: 20px;
+  padding: 4rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.login-icon {
+  font-size: 4rem;
+  color: #e67e22;
+  margin-bottom: 1.5rem;
+}
+
+.login-prompt h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.login-prompt p {
+  font-size: 1.1rem;
+  color: #777;
+  margin-bottom: 2rem;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 12px 30px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.btn-primary {
   background: #e67e22;
   color: #fff;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: bold;
-  margin: 8px;
-  cursor: pointer;
 }
-.register-btn:hover, .login-btn:hover {
-  background: #f39c12;
+
+.btn-primary:hover {
+  background: #d35400;
 }
-.logout-btn {
-  background: #b71c1c;
+
+.btn-secondary {
+  background: #3498db;
   color: #fff;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: bold;
-  margin-top: 18px;
-  cursor: pointer;
-  transition: background 0.2s;
 }
-.logout-btn:hover {
-  background: #e53935;
+
+.btn-secondary:hover {
+  background: #2980b9;
 }
 </style>

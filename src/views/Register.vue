@@ -123,7 +123,7 @@ export default {
           const payload = { ...this.form };
           delete payload.confirmPassword;
 
-          // The backend endpoint should be '/register.php' or similar
+          // Call the PHP endpoint on XAMPP: POST /register.php
           await apiClient.post('/register.php', payload);
 
           this.success = true;

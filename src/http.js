@@ -2,10 +2,7 @@ import axios from 'axios';
 import store from './store'; // Import the store
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost/api', // Your backend URL
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: 'http://localhost/api' // XAMPP PHP backend under htdocs/api
 });
 
 // Request Interceptor: Add Authorization header
@@ -14,6 +11,18 @@ apiClient.interceptors.request.use(config => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Let Axios set the Content-Type header
+  if (config.data instanceof FormData) {
+    // When sending FormData, the browser will set the Content-Type to 'multipart/form-data'
+    // and include the boundary. We need to delete any existing Content-Type header
+    // for this to work correctly.
+    delete config.headers['Content-Type'];
+  } else if (!config.headers['Content-Type']) {
+    // For other requests, if no content type is set, default to JSON
+    config.headers['Content-Type'] = 'application/json';
+  }
+
   return config;
 }, error => {
   return Promise.reject(error);

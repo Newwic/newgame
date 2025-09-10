@@ -4,7 +4,15 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 
 const app = express();
-app.use(cors());
+
+// Configure CORS to accept requests from the frontend (adjust origin as needed)
+app.use(cors({
+    origin: true,
+    methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// express + cors will handle OPTIONS preflight automatically
 app.use(express.json());
 
 // Database connection
@@ -54,6 +62,48 @@ app.post('/api/register', async (req, res) => {
             }
             res.json({ success: true });
         });
+    });
+});
+
+// Login endpoint
+app.post('/api/login', (req, res) => {
+    console.log('Login request from', req.ip, 'body keys:', Object.keys(req.body));
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: 'กรุณากรอกอีเมลและรหัสผ่าน' });
+    }
+
+    db.query('SELECT id, name, email, password, gender, interests FROM users WHERE email = ?', [email], async (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์' });
+        }
+
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'ไม่พบผู้ใช้งานนี้' });
+        }
+
+        const user = results[0];
+
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+            return res.status(400).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+        }
+
+        // Create a simple token (for demo). Replace with JWT in production.
+        const token = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+
+        // return user info without password
+        const safeUser = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            gender: user.gender,
+            interests: JSON.parse(user.interests || '[]')
+        };
+
+        res.json({ token, user: safeUser });
     });
 });
 

@@ -30,6 +30,9 @@
                 <input v-model="password" type="password" placeholder="รหัสผ่าน" required />
               </div>
               <div v-if="error" class="error-message">{{ error }}</div>
+              <div v-if="showRegisterPrompt" class="register-prompt">
+                ยังไม่มีบัญชีสำหรับอีเมลนี้หรือไม่? <router-link to="/register"><strong>สมัครสมาชิกที่นี่</strong></router-link>
+              </div>
               <button type="submit" class="login-btn">เข้าสู่ระบบ</button>
               <div class="login-options">
                 <a href="#" class="forgot">ลืมรหัสผ่าน?</a>
@@ -72,6 +75,7 @@ export default {
       email: '',
       password: '',
       error: null, // for user login errors
+  showRegisterPrompt: false,
 
       // Admin login fields
       adminUsername: '',
@@ -87,6 +91,7 @@ export default {
     },
     async loginUser() {
       this.error = null;
+      this.showRegisterPrompt = false;
       try {
         await this.$store.dispatch('auth/login', {
           email: this.email,
@@ -94,8 +99,13 @@ export default {
         });
         this.$router.push('/main-menu');
       } catch (err) {
+        this.showRegisterPrompt = false;
         if (err.response && err.response.data && err.response.data.message) {
           this.error = err.response.data.message;
+          // If backend says user not found, show quick register prompt
+          if (typeof this.error === 'string' && this.error.includes('ไม่พบผู้ใช้งาน')) {
+            this.showRegisterPrompt = true;
+          }
         } else {
           this.error = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้';
         }
@@ -104,8 +114,8 @@ export default {
     },
     loginAdmin() {
       this.adminError = null;
-      const ADMIN_USER = 'admin';
-      const ADMIN_PASS = 'password123';
+      const ADMIN_USER = 'ew';
+      const ADMIN_PASS = 'eww';
 
       if (this.adminUsername === ADMIN_USER && this.adminPassword === ADMIN_PASS) {
         // Dispatch the Vuex action for admin login
@@ -292,6 +302,9 @@ export default {
   text-align: center;
   font-size: 0.9rem;
 }
+
+.register-prompt { text-align:center; margin-top:8px; color:#444 }
+.register-prompt a { color:#e67e22 }
 
 /* Responsive */
 @media (max-width: 768px) {

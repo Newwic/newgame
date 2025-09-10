@@ -65,7 +65,7 @@ const actions = {
   async login({ commit }, credentials) {
     // We return the promise to the component to handle success/failure
     return new Promise((resolve, reject) => {
-      apiClient.post('/login.php', credentials)
+  apiClient.post('/login.php', credentials)
         .then(response => {
           const { token, user } = response.data;
           commit('SET_AUTH_DATA', { token, user });

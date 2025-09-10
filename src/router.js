@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import NewsView from './views/News.vue'
+import NewsView from './views/review.vue'
 import ContactView from './views/Contact.vue'
 import AboutView from './views/about.vue'
 import ShopView from './views/ShopView.vue'
